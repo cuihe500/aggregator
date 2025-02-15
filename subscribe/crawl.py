@@ -756,7 +756,7 @@ def search_github_code(page: int, cookie: str, excludes: list = []) -> list[str]
         return []
 
     try:
-        regex = r'<a href="(/\S+/blob/.*?)#L\d+"'
+        regex = r'href="(/[^\s"]+/blob/(?:[^"]+)?)#L\d+"'
         groups = re.findall(regex, content, flags=re.I)
         uris, links = list(set(groups)) if groups else [], set()
         excludes = list(set(excludes))
@@ -1261,7 +1261,8 @@ def check_status(
         if response.getcode() != 200:
             return False, connectable
 
-        content = str(response.read(), encoding="utf8")
+        # in order to avoid the request to the speed test site causing constant data downloads, limit the maximum read to 15MB
+        content = str(response.read(15 * 1024 * 2014), encoding="utf8")
 
         # response text is too short, ignore
         if len(content) < 32:
